@@ -2,6 +2,17 @@
 
 pub use pallet::*;
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
+pub mod weights;
+
 #[frame_support::pallet]
 pub mod pallet {
 use frame_support::{pallet_prelude::*};
@@ -18,6 +29,11 @@ use frame_support::{pallet_prelude::*};
 
 	#[cfg(feature = "std")]
 	use frame_support::serde::{Deserialize, Serialize};
+
+	use log::{info, error};
+
+	use crate::weights::WeightInfo;
+
 
 	type AccountOf<T> = <T as frame_system::Config>::AccountId;
 	type BalanceOf<T> =
@@ -44,6 +60,12 @@ use frame_support::{pallet_prelude::*};
 		Female,
 	}
 
+	impl <T> sp_std::fmt::Display for Kitty<T> where T: Config {
+		fn fmt(&self, f: &mut sp_std::fmt::Formatter<'_>) -> sp_std::fmt::Result {
+			write!(f, "(dna: {:?}, price: {:?}, gender: {:?}, owner: {:?}, created: {:?})", self.dna, self.price, self.gender, self.owner, self.created)
+		}
+	}
+
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
 	#[pallet::without_storage_info]
@@ -66,6 +88,8 @@ use frame_support::{pallet_prelude::*};
 		type KittyRandomness: Randomness<Self::Hash, Self::BlockNumber>;
 
 		type KittyTime: Time;
+
+		type WeightInfo : WeightInfo;
 		
 	}
 
@@ -130,11 +154,13 @@ use frame_support::{pallet_prelude::*};
 		/// Create a new unique kitty.
 		///
 		/// The actual kitty creation is done in the `mint()` function.
-		#[pallet::weight(100)]
+		#[pallet::weight(T::WeightInfo::create_kitty())]
 		pub fn create_kitty(origin: OriginFor<T>) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
 			let kitty_id = Self::mint(&sender, None, None)?;
+
+			info!("kitty_id: {:?}", &kitty_id);
 
 			// Deposit our "Created" event.
 			Self::deposit_event(Event::Created(sender, kitty_id));
@@ -144,7 +170,7 @@ use frame_support::{pallet_prelude::*};
 		/// Set the price for a Kitty.
 		///
 		/// Updates Kitty price and updates storage.
-		#[pallet::weight(100)]
+		#[pallet::weight(100000000)]
 		pub fn set_price(
 			origin: OriginFor<T>,
 			kitty_id: T::Hash,
@@ -307,6 +333,8 @@ use frame_support::{pallet_prelude::*};
 				owner: owner.clone(),
 				created: T::KittyTime::now(),
 			};
+
+			info!("created kitty: {}", &kitty);
 
 			let kitty_id = T::Hashing::hash_of(&kitty);
 

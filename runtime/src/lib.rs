@@ -280,6 +280,7 @@ impl pallet_kitties::Config for Runtime {
 	type MaxKittyOwned = MaxKittyOwned;
 	type KittyRandomness = RandomnessCollectiveFlip;
 	type KittyTime = Timestamp;
+	type WeightInfo = pallet_kitties::weights::SubstrateWeightInfo<Runtime>;
 }
 
 impl pallet_kitties_market::Config for Runtime {
@@ -346,7 +347,7 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_template, TemplateModule]
+		[pallet_kitty, PalletKitties]
 	);
 }
 
