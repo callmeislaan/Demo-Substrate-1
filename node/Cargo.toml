@@ -1,5 +1,5 @@
 [package]
-name = "node-kitties"
+name = "node-kitty"
 version = "4.0.0-dev"
 description = "A fresh FRAME-based Substrate node, ready for hacking."
 authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
@@ -14,7 +14,7 @@ build = "build.rs"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [[bin]]
-name = "node-kitties"
+name = "node-kitty"
 
 [dependencies]
 clap = { version = "3.0", features = ["derive"] }
@@ -47,17 +47,18 @@ sp-block-builder = { version = "4.0.0-dev", git = "https://github.com/paritytech
 sc-basic-authorship = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 substrate-frame-rpc-system = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 pallet-transaction-payment-rpc = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
+pallet-kitty-rpc = {version = "4.0.0-dev", path = "../pallets/kitty/rpc"}
 
 # These dependencies are used for runtime benchmarking
 frame-benchmarking = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 
 # Local Dependencies
-node-kitties-runtime = { version = "4.0.0-dev", path = "../runtime" }
+node-kitty-runtime = { version = "4.0.0-dev", path = "../runtime" }
 
 [build-dependencies]
 substrate-build-script-utils = { version = "3.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 
 [features]
 default = []
-runtime-benchmarks = ["node-kitties-runtime/runtime-benchmarks"]
+runtime-benchmarks = ["node-kitty-runtime/runtime-benchmarks"]

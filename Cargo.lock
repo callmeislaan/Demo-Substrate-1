@@ -3551,14 +3551,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "node-kitties"
+name = "node-kitty"
 version = "4.0.0-dev"
 dependencies = [
  "clap",
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "jsonrpc-core",
- "node-kitties-runtime",
+ "node-kitty-runtime",
+ "pallet-kitty-rpc",
  "pallet-transaction-payment-rpc",
  "sc-basic-authorship",
  "sc-cli",
@@ -3588,7 +3589,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "node-kitties-runtime"
+name = "node-kitty-runtime"
 version = "4.0.0-dev"
 dependencies = [
  "frame-benchmarking",
@@ -3601,8 +3602,8 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-grandpa",
- "pallet-kitties",
- "pallet-kitties-market",
+ "pallet-kitty",
+ "pallet-kitty-rpc-runtime-api",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-timestamp",
@@ -3875,7 +3876,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-kitties"
+name = "pallet-kitty"
 version = "4.0.0-dev"
 dependencies = [
  "frame-benchmarking",
@@ -3895,19 +3896,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-kitties-market"
+name = "pallet-kitty-rpc"
 version = "4.0.0-dev"
 dependencies = [
- "frame-benchmarking",
- "frame-support",
  "frame-system",
- "pallet-kitties",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-io",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "pallet-kitty-rpc-runtime-api",
+ "sp-api",
+ "sp-blockchain",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-kitty-rpc-runtime-api"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-support",
+ "sp-api",
 ]
 
 [[package]]

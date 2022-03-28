@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use node_kitties_runtime::{opaque::Block, AccountId, Balance, Index};
+use node_kitty_runtime::{opaque::Block, AccountId, Balance, Index};
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
@@ -34,9 +34,12 @@ where
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + 'static,
+	C::Api: pallet_kitty_rpc::PalletKittyRuntimeApi<Block>,
 {
+
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
 	use substrate_frame_rpc_system::{FullSystem, SystemApi};
+	use pallet_kitty_rpc::{PalletKittyApi, PalletKittyRpc};
 
 	let mut io = jsonrpc_core::IoHandler::default();
 	let FullDeps { client, pool, deny_unsafe } = deps;
@@ -45,6 +48,7 @@ where
 
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client.clone())));
 
+	io.extend_with(PalletKittyApi::to_delegate(PalletKittyRpc::new(client.clone())));
 	// Extend this RPC with a custom API by using the following syntax.
 	// `YourRpcStruct` should have a reference to a client, which is needed
 	// to call into the runtime.

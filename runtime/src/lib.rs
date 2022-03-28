@@ -42,9 +42,7 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 /// Import the template pallet.
-pub use pallet_kitties;
-
-pub use pallet_kitties_market;
+pub use pallet_kitty;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -273,18 +271,14 @@ parameter_types! {
     pub const MaxKittyOwned: u32 = 9999;
 }
 
-/// Configure the pallet-kitties in pallets/kitties.
-impl pallet_kitties::Config for Runtime {
+/// Configure the pallet-kitty in pallets/kitty.
+impl pallet_kitty::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type MaxKittyOwned = MaxKittyOwned;
 	type KittyRandomness = RandomnessCollectiveFlip;
 	type KittyTime = Timestamp;
-	type WeightInfo = pallet_kitties::weights::SubstrateWeightInfo<Runtime>;
-}
-
-impl pallet_kitties_market::Config for Runtime {
-	type Event = Event;
+	type WeightInfo = pallet_kitty::weights::SubstrateWeightInfo<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -303,8 +297,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
-		PalletKitties: pallet_kitties,
-		PalletKittiesMarket: pallet_kitties_market,
+		PalletKitty: pallet_kitty,
 	}
 );
 
@@ -347,7 +340,7 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_kitty, PalletKitties]
+		[pallet_kitty, PalletKitty]
 	);
 }
 
@@ -479,6 +472,12 @@ impl_runtime_apis! {
 			len: u32,
 		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
+		}
+	}
+
+	impl pallet_kitty_rpc_runtime_api::PalletKittyRuntimeApi<Block> for Runtime {
+		fn kitty_cnt() -> u64 {
+			PalletKitty::kitty_cnt()
 		}
 	}
 

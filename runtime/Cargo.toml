@@ -1,5 +1,5 @@
 [package]
-name = 'node-kitties-runtime'
+name = 'node-kitty-runtime'
 version = '4.0.0-dev'
 description = 'A fresh FRAME-based Substrate runtime, ready for hacking.'
 authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
@@ -41,6 +41,7 @@ sp-version = { version = "4.0.0-dev", default-features = false, git = "https://g
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
+pallet-kitty-rpc-runtime-api = {version = "4.0.0-dev", default-features = false, path = "../pallets/kitty/rpc/runtime-api"}
 
 # Used for runtime benchmarking
 frame-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17", optional = true }
@@ -48,8 +49,7 @@ frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, g
 hex-literal = { version = "0.3.4", optional = true }
 
 # Local dependencies
-pallet-kitties = { version = "4.0.0-dev", default-features = false, path = "../pallets/kitties" }
-pallet-kitties-market = { version = "4.0.0-dev", default-features = false, path = "../pallets/kitties-market" }
+pallet-kitty = { version = "4.0.0-dev", default-features = false, path = "../pallets/kitty" }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
@@ -68,7 +68,8 @@ std = [
 	"pallet-grandpa/std",
 	"pallet-randomness-collective-flip/std",
 	"pallet-sudo/std",
-	"pallet-kitties/std",
+	"pallet-kitty-rpc-runtime-api/std",
+	"pallet-kitty/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -83,7 +84,6 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
-	"pallet-kitties-market/std"
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -94,5 +94,5 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
-	"pallet-kitties/runtime-benchmarks",
+	"pallet-kitty/runtime-benchmarks",
 ]

@@ -13,6 +13,8 @@ mod benchmarking;
 
 pub mod weights;
 
+pub mod kitty;
+
 #[frame_support::pallet]
 pub mod pallet {
 use frame_support::{pallet_prelude::*};
@@ -30,41 +32,16 @@ use frame_support::{pallet_prelude::*};
 	#[cfg(feature = "std")]
 	use frame_support::serde::{Deserialize, Serialize};
 
-	use log::{info, error};
+	use log::{info};
+	use crate::kitty::Gender;
+	use crate::kitty::Kitty;
 
 	use crate::weights::WeightInfo;
 
-
-	type AccountOf<T> = <T as frame_system::Config>::AccountId;
-	type BalanceOf<T> =
+	pub(super) type AccountOf<T> = <T as frame_system::Config>::AccountId;
+	pub(super) type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-	type TimeOf<T> = <<T as Config>::KittyTime as frame_support::traits::Time>::Moment;
-
-	// Struct for holding Kitty information.
-	#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
-	#[scale_info(skip_type_params(T))]
-	#[codec(mel_bound())]
-	pub struct Kitty<T: Config> {
-		pub dna: [u8; 16],   // Using 16 bytes to represent a kitty DNA
-		pub price: Option<BalanceOf<T>>,
-		pub gender: Gender,
-		pub owner: AccountOf<T>,
-		pub created: TimeOf<T>,
-	}
-
-	// Enum declaration for Gender.
-	#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
-	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-	pub enum Gender {
-		Male,
-		Female,
-	}
-
-	impl <T> sp_std::fmt::Display for Kitty<T> where T: Config {
-		fn fmt(&self, f: &mut sp_std::fmt::Formatter<'_>) -> sp_std::fmt::Result {
-			write!(f, "(dna: {:?}, price: {:?}, gender: {:?}, owner: {:?}, created: {:?})", self.dna, self.price, self.gender, self.owner, self.created)
-		}
-	}
+	pub(super) type TimeOf<T> = <<T as Config>::KittyTime as frame_support::traits::Time>::Moment;
 
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
@@ -77,10 +54,10 @@ use frame_support::{pallet_prelude::*};
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		/// The Currency handler for the Kitties pallet.
+		/// The Currency handler for the kitty pallet.
 		type Currency: Currency<Self::AccountId>;
 
-		/// The maximum amount of Kitties a single account can own.
+		/// The maximum amount of kitty a single account can own.
 		#[pallet::constant]
 		type MaxKittyOwned: Get<u32>;
 
@@ -90,7 +67,7 @@ use frame_support::{pallet_prelude::*};
 		type KittyTime: Time;
 
 		type WeightInfo : WeightInfo;
-		
+
 	}
 
 	// Errors.
@@ -98,7 +75,7 @@ use frame_support::{pallet_prelude::*};
 	pub enum Error<T> {
 		/// Handles arithmetic overflow when incrementing the Kitty counter.
 		KittyCntOverflow,
-		/// An account cannot own more Kitties than `MaxKittyCount`.
+		/// An account cannot own more kitty than `MaxKittyCount`.
 		ExceedMaxKittyOwned,
 		/// Buyer cannot be the owner.
 		BuyerIsKittyOwner,
@@ -135,18 +112,18 @@ use frame_support::{pallet_prelude::*};
 
 	#[pallet::storage]
 	#[pallet::getter(fn kitty_cnt)]
-	/// Keeps track of the number of Kitties in existence.
+	/// Keeps track of the number of kitty in existence.
 	pub(super) type KittyCnt<T: Config> = StorageValue<_, u64, ValueQuery>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn kitties)]
+	#[pallet::getter(fn kitty)]
 	/// Stores a Kitty's unique traits, owner and price.
-	pub(super) type Kitties<T: Config> = StorageMap<_, Twox64Concat, T::Hash, Kitty<T>>;
+	pub(super) type kitty<T: Config> = StorageMap<_, Twox64Concat, T::Hash, Kitty<T>>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn kitties_owned)]
+	#[pallet::getter(fn kitty_owned)]
 	/// Keeps track of what accounts own what Kitty.
-	pub(super) type KittiesOwned<T: Config> =
+	pub(super) type kittyOwned<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, BoundedVec<T::Hash, T::MaxKittyOwned>, ValueQuery>;
 
 	#[pallet::call]
@@ -181,10 +158,10 @@ use frame_support::{pallet_prelude::*};
 			// Ensure the kitty exists and is called by the kitty owner
 			ensure!(Self::is_kitty_owner(&kitty_id, &sender)?, <Error<T>>::NotKittyOwner);
 
-			let mut kitty = Self::kitties(&kitty_id).ok_or(<Error<T>>::KittyNotExist)?;
+			let mut kitty = Self::kitty(&kitty_id).ok_or(<Error<T>>::KittyNotExist)?;
 
 			kitty.price = new_price.clone();
-			<Kitties<T>>::insert(&kitty_id, kitty);
+			<kitty<T>>::insert(&kitty_id, kitty);
 
 			// Deposit a "PriceSet" event.
 			Self::deposit_event(Event::PriceSet(sender, kitty_id, new_price));
@@ -211,7 +188,7 @@ use frame_support::{pallet_prelude::*};
 			ensure!(from != to, <Error<T>>::TransferToSelf);
 
 			// Verify the recipient has the capacity to receive one more kitty
-			let to_owned = <KittiesOwned<T>>::get(&to);
+			let to_owned = <kittyOwned<T>>::get(&to);
 			ensure!((to_owned.len() as u32) < T::MaxKittyOwned::get(), <Error<T>>::ExceedMaxKittyOwned);
 
 			Self::transfer_kitty_to(&kitty_id, &to)?;
@@ -236,7 +213,7 @@ use frame_support::{pallet_prelude::*};
 			let buyer = ensure_signed(origin)?;
 
 			// Check the kitty exists and buyer is not the current kitty owner
-			let kitty = Self::kitties(&kitty_id).ok_or(<Error<T>>::KittyNotExist)?;
+			let kitty = Self::kitty(&kitty_id).ok_or(<Error<T>>::KittyNotExist)?;
 			ensure!(kitty.owner != buyer, <Error<T>>::BuyerIsKittyOwner);
 
 			// Check the kitty is for sale and the kitty ask price <= bid_price
@@ -250,7 +227,7 @@ use frame_support::{pallet_prelude::*};
 			ensure!(T::Currency::free_balance(&buyer) >= bid_price, <Error<T>>::NotEnoughBalance);
 
 			// Verify the buyer has the capacity to receive one more kitty
-			let to_owned = <KittiesOwned<T>>::get(&buyer);
+			let to_owned = <kittyOwned<T>>::get(&buyer);
 			ensure!((to_owned.len() as u32) < T::MaxKittyOwned::get(), <Error<T>>::ExceedMaxKittyOwned);
 
 			let seller = kitty.owner.clone();
@@ -268,8 +245,8 @@ use frame_support::{pallet_prelude::*};
 
 		/// Breed a Kitty.
 		///
-		/// Breed two kitties to create a new generation
-		/// of Kitties.
+		/// Breed two kitty to create a new generation
+		/// of kitty.
 		#[pallet::weight(100)]
 		pub fn breed_kitty(
 			origin: OriginFor<T>,
@@ -278,7 +255,7 @@ use frame_support::{pallet_prelude::*};
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			// Check: Verify `sender` owns both kitties (and both kitties exist).
+			// Check: Verify `sender` owns both kitty (and both kitty exist).
 			ensure!(Self::is_kitty_owner(&parent1, &sender)?, <Error<T>>::NotKittyOwner);
 			ensure!(Self::is_kitty_owner(&parent2, &sender)?, <Error<T>>::NotKittyOwner);
 
@@ -310,8 +287,8 @@ use frame_support::{pallet_prelude::*};
 		}
 
 		pub fn breed_dna(parent1: &T::Hash, parent2: &T::Hash) -> Result<[u8; 16], Error<T>> {
-			let dna1 = Self::kitties(parent1).ok_or(<Error<T>>::KittyNotExist)?.dna;
-			let dna2 = Self::kitties(parent2).ok_or(<Error<T>>::KittyNotExist)?.dna;
+			let dna1 = Self::kitty(parent1).ok_or(<Error<T>>::KittyNotExist)?.dna;
+			let dna2 = Self::kitty(parent2).ok_or(<Error<T>>::KittyNotExist)?.dna;
 
 			let mut new_dna = Self::gen_dna();
 			for i in 0..new_dna.len() {
@@ -343,20 +320,20 @@ use frame_support::{pallet_prelude::*};
 				.ok_or(<Error<T>>::KittyCntOverflow)?;
 
 			// Check if the kitty does not already exist in our storage map
-			ensure!(Self::kitties(&kitty_id) == None, <Error<T>>::KittyExists);
-			
+			ensure!(Self::kitty(&kitty_id) == None, <Error<T>>::KittyExists);
+
 			// Performs this operation first because as it may fail
-			<KittiesOwned<T>>::try_mutate(&owner, |kitty_vec| {
+			<kittyOwned<T>>::try_mutate(&owner, |kitty_vec| {
 				kitty_vec.try_push(kitty_id)
 			}).map_err(|_| <Error<T>>::ExceedMaxKittyOwned)?;
 
-			<Kitties<T>>::insert(kitty_id, kitty);
+			<kitty<T>>::insert(kitty_id, kitty);
 			<KittyCnt<T>>::put(new_cnt);
 			Ok(kitty_id)
 		}
 
 		pub fn is_kitty_owner(kitty_id: &T::Hash, acct: &T::AccountId) -> Result<bool, Error<T>> {
-			match Self::kitties(kitty_id) {
+			match Self::kitty(kitty_id) {
 				Some(kitty) => Ok(kitty.owner == *acct),
 				None => Err(<Error<T>>::KittyNotExist)
 			}
@@ -367,12 +344,12 @@ use frame_support::{pallet_prelude::*};
 			kitty_id: &T::Hash,
 			to: &T::AccountId,
 		) -> Result<(), Error<T>> {
-			let mut kitty = Self::kitties(&kitty_id).ok_or(<Error<T>>::KittyNotExist)?;
+			let mut kitty = Self::kitty(&kitty_id).ok_or(<Error<T>>::KittyNotExist)?;
 
 			let prev_owner = kitty.owner.clone();
 
 			// Remove `kitty_id` from the KittyOwned vector of `prev_kitty_owner`
-			<KittiesOwned<T>>::try_mutate(&prev_owner, |owned| {
+			<kittyOwned<T>>::try_mutate(&prev_owner, |owned| {
 				if let Some(ind) = owned.iter().position(|&id| id == *kitty_id) {
 					owned.swap_remove(ind);
 					return Ok(());
@@ -386,26 +363,30 @@ use frame_support::{pallet_prelude::*};
 			// by the current owner.
 			kitty.price = None;
 
-			<Kitties<T>>::insert(kitty_id, kitty);
+			<kitty<T>>::insert(kitty_id, kitty);
 
-			<KittiesOwned<T>>::try_mutate(to, |vec| {
+			<kittyOwned<T>>::try_mutate(to, |vec| {
 				vec.try_push(*kitty_id)
 			}).map_err(|_| <Error<T>>::ExceedMaxKittyOwned)?;
 
 			Ok(())
 		}
 
-		pub fn get_kitties_by_owner(owner: &T::AccountId) -> Vec<T::Hash> {
-			<KittiesOwned<T>>::get(owner).try_into().unwrap()
+		pub fn get_kitty_cnt() -> u64 {
+			Self::kitty_cnt()
 		}
 
-		pub fn get_all_kitties() -> Vec<(T::Hash, Kitty<T>)> {
-			let kitties_iter = <Kitties<T>>::iter();
-			let mut kitties_value: Vec<(T::Hash, Kitty<T>)> = Vec::new();
-			for value in kitties_iter {
-				kitties_value.push((value.0, value.1));
+		pub fn get_kitty_by_owner(owner: &T::AccountId) -> Vec<T::Hash> {
+			<kittyOwned<T>>::get(owner).try_into().unwrap()
+		}
+
+		pub fn get_all_kitty() -> Vec<(T::Hash, Kitty<T>)> {
+			let kitty_iter = <kitty<T>>::iter();
+			let mut kitty_value: Vec<(T::Hash, Kitty<T>)> = Vec::new();
+			for value in kitty_iter {
+				kitty_value.push((value.0, value.1));
 			}
-			kitties_value
+			kitty_value
 		}
 	}
 }

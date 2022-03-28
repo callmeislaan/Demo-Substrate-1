@@ -1,4 +1,4 @@
-use node_kitties_runtime::{
+use node_kitty_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
 	SystemConfig, WASM_BINARY,
 };

@@ -11,16 +11,16 @@ fn should_fn_create_kitty_work() {
 		System::set_block_number(1);
 
 		let sender = 1u64;
-		
+
 		// ensure funtion work
 		assert_ok!(KittyModule::create_kitty(Origin::signed(sender)));
-		
+
 		// ensure storage value
 		assert_eq!(KittyModule::kitty_cnt(), 1);
 
 		let event = <frame_system::Pallet<Test>>::events().pop().expect("Expected event").event;
-		
-		let kitty_id = KittyModule::kitties_owned(sender).last().unwrap().to_owned();
+
+		let kitty_id = KittyModule::kitty_owned(sender).last().unwrap().to_owned();
 
 		assert_eq!(event, mock::Event::from(pallet_kitty::Event::Created(sender, kitty_id)));
 	});
@@ -33,12 +33,12 @@ fn shoud_fn_mint_generate_kitty_and_save_to_storage_success() {
 		let kitty_id = KittyModule::mint(&account_id, None, None).unwrap();
 
 		assert_eq!(KittyModule::kitty_cnt(), 1);
-		
-		let kitty = KittyModule::kitties(kitty_id);
-		
+
+		let kitty = KittyModule::kitty(kitty_id);
+
 		assert_eq!(kitty.is_some(), true);
-		
-		let bounded_vec = KittyModule::kitties_owned(account_id);
+
+		let bounded_vec = KittyModule::kitty_owned(account_id);
 
 		assert_eq!(bounded_vec.len(), 1);
 
@@ -49,12 +49,12 @@ fn shoud_fn_mint_generate_kitty_and_save_to_storage_success() {
 		let kitty_id_2 = KittyModule::mint(&account_id, None, None).unwrap();
 
 		assert_eq!(KittyModule::kitty_cnt(), 2);
-		
-		let kitty_2 = KittyModule::kitties(kitty_id_2);
-		
+
+		let kitty_2 = KittyModule::kitty(kitty_id_2);
+
 		assert_eq!(kitty_2.is_some(), true);
-		
-		let bounded_vec_2 = KittyModule::kitties_owned(account_id);
+
+		let bounded_vec_2 = KittyModule::kitty_owned(account_id);
 
 		assert_eq!(bounded_vec_2.len(), 2);
 
