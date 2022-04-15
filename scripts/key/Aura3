@@ -1,0 +1,11 @@
+{
+  "jsonrpc":"2.0",
+  "id":1,
+  "method":"author_insertKey",
+  "params":
+  [
+  "aura",
+  "build behind join impose music example meat wheat tip inmate wisdom public",
+  "0x3c3c1ad6b85ab2d9c043d9ad20012cb37da9337e904e5ca8d948afd2c621cb6d"
+  ]
+}

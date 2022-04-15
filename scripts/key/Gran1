@@ -1,0 +1,11 @@
+{
+  "jsonrpc":"2.0",
+  "id":1,
+  "method":"author_insertKey",
+  "params":
+  [
+  "gran",
+  "slot act leisure distance imitate float plate gesture winter kingdom loyal hurry",
+  "0xcacb4fc5e37141179a79ee78fce70a8adef4d00d8a40b254c54d5388e48938fb"
+  ]
+}

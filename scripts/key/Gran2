@@ -1,0 +1,11 @@
+{
+  "jsonrpc":"2.0",
+  "id":1,
+  "method":"author_insertKey",
+  "params":
+  [
+  "gran",
+  "endless speed split arm pet pepper real original nominee radio elite ribbon",
+  "0x0464742439dfd99ea94b0a49c7f4475f95b0559f40616d2fc3ad7103212bfe0a"
+  ]
+}

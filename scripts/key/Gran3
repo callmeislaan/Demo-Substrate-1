@@ -1,0 +1,11 @@
+{
+  "jsonrpc":"2.0",
+  "id":1,
+  "method":"author_insertKey",
+  "params":
+  [
+  "gran",
+  "build behind join impose music example meat wheat tip inmate wisdom public",
+  "0x4d2e452cdd47b914a66f9a7c20373494b9ce08bcc92ae872bf4f94ab06e031fa"
+  ]
+}
